@@ -37,16 +37,17 @@ func main() {
 
 	config := &ssh.ServerConfig{
 		//Define a function to run when a client attempts a password login
-		PasswordCallback: func(c ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
-			// Should use constant-time compare (or better, salt+hash) in a production setting.
-			if c.User() == "foo" && string(pass) == "bar" {
-				return nil, nil
-			}
-			return nil, fmt.Errorf("password rejected for %q", c.User())
-		},
+		//PasswordCallback: func(c ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
+		// Should use constant-time compare (or better, salt+hash) in a production setting.
+
+		// if c.User() == "foo" && string(pass) == "bar" {
+		// 	return nil, nil
+		// }
+		// return nil, fmt.Errorf("password rejected for %q", c.User())
+		//},
 		// You may also explicitly allow anonymous client authentication, though anon bash
 		// sessions may not be a wise idea
-		// NoClientAuth: true,
+		NoClientAuth: true,
 	}
 
 	// You can generate a keypair with 'ssh-keygen -t rsa'
