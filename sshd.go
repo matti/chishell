@@ -21,6 +21,7 @@ import (
 	"log"
 	"net"
 	"os/exec"
+	"strconv"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -32,6 +33,7 @@ import (
 
 func main() {
 	upstream := flag.String("upstream", "localhost:8080", "chisel server")
+	port := flag.Int("port", 2200, "local sshd server's port")
 	flag.Parse()
 
 	// In the latest version of crypto/ssh (after Go 1.3), the SSH server type has been removed
@@ -68,14 +70,14 @@ func main() {
 	config.AddHostKey(private)
 
 	// Once a ServerConfig has been configured, connections can be accepted.
-	listener, err := net.Listen("tcp", "0.0.0.0:2200")
+	listener, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(*port))
 	if err != nil {
-		log.Fatalf("Failed to listen on 2200 (%s)", err)
+		log.Fatalf("Failed to listen on %d (%s)", *port, err)
 	}
 
 	chisel, err := chclient.NewClient(&chclient.Config{
 		Server:  *upstream,
-		Remotes: []string{"R:4444:localhost:2200"},
+		Remotes: []string{"R:4444:localhost:" + strconv.Itoa(*port)},
 	})
 	if err != nil {
 		log.Fatalf("failed to create chisel client: %v", err)
@@ -87,7 +89,7 @@ func main() {
 	}()
 
 	// Accept all connections
-	log.Print("Listening on 2200...")
+	log.Printf("Listening on %d...", *port)
 	for {
 		tcpConn, err := listener.Accept()
 		if err != nil {
