@@ -137,7 +137,7 @@ func handleChannel(newChannel ssh.NewChannel) {
 	}
 
 	// Fire up bash for this session
-	bash := exec.Command("bash")
+	bash := exec.Command("/bin/sh")
 
 	// Prepare teardown function
 	close := func() {
