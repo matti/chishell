@@ -14,6 +14,7 @@ package main
 
 import (
 	"encoding/binary"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -24,11 +25,14 @@ import (
 	"syscall"
 	"unsafe"
 
+	chclient "github.com/jpillora/chisel/client"
 	"github.com/kr/pty"
 	"golang.org/x/crypto/ssh"
 )
 
 func main() {
+	upstream := flag.String("upstream", "localhost:8080", "chisel server")
+	flag.Parse()
 
 	// In the latest version of crypto/ssh (after Go 1.3), the SSH server type has been removed
 	// in favour of an SSH connection type. A ssh.ServerConn is created by passing an existing
@@ -68,6 +72,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to listen on 2200 (%s)", err)
 	}
+
+	chisel, err := chclient.NewClient(&chclient.Config{
+		Server:  *upstream,
+		Remotes: []string{"R:4444:localhost:2200"},
+	})
+	if err != nil {
+		log.Fatalf("failed to create chisel client: %v", err)
+	}
+	go func() {
+		if err := chisel.Run(); err != nil {
+			log.Fatalf("failed to start chisel client: %v", err)
+		}
+	}()
 
 	// Accept all connections
 	log.Print("Listening on 2200...")
